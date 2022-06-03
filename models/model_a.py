@@ -1,3 +1,4 @@
+import math
 from datetime import timedelta, datetime
 import pandas as pd
 
@@ -39,7 +40,9 @@ def learn():
         if next_purchase[user_id]:
             time_difference = max(next_purchase[user_id] - session["timestamp"], timedelta(hours=24))
             time_difference = time_difference.total_seconds() / 86400
-            spending_factors[user_id] += session["price"] * (1 - session["offered_discount"] / 100) / time_difference
+            days_from_today = (datetime.now() - session["timestamp"]).total_seconds() / 86400 / 30
+            favor_newer_records_with_tanh = (0.5 + 0.5 * math.tanh(- days_from_today / 2 + 2))
+            spending_factors[user_id] += session["price"] * (1 - session["offered_discount"] / 100) / time_difference * favor_newer_records_with_tanh
         next_purchase[user_id] = session["timestamp"]
 
     correction = actual_total / sum(spending_factors.values())
