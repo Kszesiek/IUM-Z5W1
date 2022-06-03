@@ -1,24 +1,37 @@
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response, status, HTTPException
+
+from models import model_a, model_b
 
 app = FastAPI()
 
 
 @app.post("/predict/A")
-async def get_prediction_a(request: Request):
-    result = None
-    return result
+async def get_prediction_a(request: Request, response: Response):
+    data = request
+    result = model_a.predict(data)
+    if result:
+        response.status_code = status.HTTP_200_OK
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="No prediction returned.")
 
 
 @app.post("/predict/B")
-async def get_prediction_b(request: Request):
-    result = None
-    return result
+async def get_prediction_b(request: Request, response: Response):
+    data = request
+    result = model_b.predict(data)
+    if result:
+        response.status_code = status.HTTP_200_OK
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="No prediction returned.")
 
 
 @app.post("/predict")
-async def get_prediction_ab(request: Request):
+async def get_prediction_ab(request: Request, response: Response):
     result = None
+    response.status_code = status.HTTP_200_OK
     return result
 
 

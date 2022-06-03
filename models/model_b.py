@@ -1,2 +1,2 @@
-def something():
-    pass
+def predict(data):
+    return None

@@ -21,6 +21,10 @@ sessions_learn = sessions_learn[sessions_learn["timestamp"].dt.month != 5]
 sessions_validate = sessions_validate[sessions_validate["timestamp"].dt.month == 5]
 
 
+def predict(data):
+    return None
+
+
 def learn():
     next_purchase = {user_id: datetime.now() for user_id in users_data["user_id"]}
     spending_factors = {user_id: 0 for user_id in users_data["user_id"]}
