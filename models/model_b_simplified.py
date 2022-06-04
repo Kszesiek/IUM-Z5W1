@@ -17,11 +17,37 @@ class ModelB(Model):
                 sessions: DataFrame,
                 users: DataFrame) -> dict[str, float]:
         # Returns prediction for input data
-        pass
 
-    def generate_model(self):
+        sessions = pd.merge(sessions, products, on="product_id")
+        sessions = pd.merge(sessions, users, on="user_id").sort_values(by=['timestamp'], ascending=True)
+        sessions_list = convert_data_from_dataframe_to_list(sessions)
+
+        user_predictions = {user_id: 0 for user_id in users["user_id"]}
+        predictions_per_user = {user_id: 0 for user_id in users["user_id"]}
+
+        for (user_id, prediction) in zip([row[2] for row in sessions_list], self.model.predict(sessions_list)):
+            user_predictions[user_id] += prediction
+            predictions_per_user[user_id] += 1
+
+        for user_id, predictions_sum in user_predictions.items():
+            user_predictions[user_id] = predictions_sum / (predictions_per_user[user_id] or 1)
+
+        return user_predictions
+
+    def generate_model(self,
+                products: DataFrame,
+                deliveries: DataFrame,
+                sessions: DataFrame,
+                users: DataFrame):
         # Calculates self.model
-        self.model = None
+
+        sessions = pd.merge(sessions, products, on="product_id")
+        sessions = pd.merge(sessions, users, on="user_id").sort_values(by=['timestamp'], ascending=True)
+
+        y = prepare_labels(sessions)
+        fitting_data = convert_data_from_dataframe_to_list(sessions)
+        clf = tree.DecisionTreeRegressor()
+        self.model = clf.fit(fitting_data, y)
 
 
 deliveries_path = "./data/deliveries.jsonl"
@@ -34,12 +60,12 @@ products_data = pd.read_json(products_path, lines=True)
 sessions_data = pd.read_json(sessions_path, lines=True)
 users_data = pd.read_json(users_path, lines=True)
 
-sessions_data = pd.merge(sessions_data, products_data, on="product_id")
-sessions_data = pd.merge(sessions_data, users_data, on="user_id").sort_values(by=['timestamp'], ascending=True)
-# sessions_data = pd.merge(sessions_data, deliveries_data, on="purchase_id")
+sessions_modified = pd.merge(sessions_data, products_data, on="product_id")
+sessions_modified = pd.merge(sessions_modified, users_data, on="user_id").sort_values(by=['timestamp'], ascending=True)
+# sessions_modified = pd.merge(sessions_modified, deliveries_data, on="purchase_id")
 
-sessions_learn = sessions_data
-sessions_validate = sessions_data
+sessions_learn = sessions_modified
+sessions_validate = sessions_modified
 
 sessions_learn = sessions_learn[sessions_learn["timestamp"].dt.month != 5]
 sessions_validate = sessions_validate[sessions_validate["timestamp"].dt.month == 5]
@@ -49,8 +75,7 @@ sessions_validate_period = sessions_validate["timestamp"].max().day
 def convert_data_from_dataframe_to_list(dataframe_data):
     data_as_list = []
     dataframe_data = dataframe_data.drop(
-        columns=['name', 'city', 'street', 'product_name', 'category_path', 'brand', 'optional_attributes',
-                 'purchase_id'])
+        columns=['name', 'city', 'street', 'product_name', 'category_path', 'brand', 'optional_attributes', 'purchase_id'])
     for session in dataframe_data.iterrows():
         session = session[1]
         row = session.tolist()
@@ -68,7 +93,10 @@ sessions_validate_list = convert_data_from_dataframe_to_list(sessions_validate)
 def prepare_labels(dataframe):
     labels = []
 
-    for month in range(1, 5):
+    min_month = dataframe["timestamp"].min().month
+    max_month = dataframe["timestamp"].max().month
+
+    for month in range(min_month, max_month + 1):
         expenses = {user_id: 0 for user_id in users_data["user_id"]}
         sessions_this_month = dataframe[dataframe["timestamp"].dt.month == month]
 
@@ -135,10 +163,29 @@ def validate(model, validating_data):
     # suma actual: 219801.26
 
 
-def predict(data):
-    return None
+def predict(products, deliveries, sessions, users, model):
+    sessions = pd.merge(sessions, products, on="product_id")
+    sessions = pd.merge(sessions, users, on="user_id").sort_values(by=['timestamp'], ascending=True)
+
+    sessions_list = convert_data_from_dataframe_to_list(sessions_data)
+
+    sessions_length = (sessions["timestamp"].max() - sessions["timestamp"].min()).days
+    user_predictions = {user_id: 0 for user_id in users["user_id"]}
+    predictions_per_user = {user_id: 0 for user_id in users["user_id"]}
+
+    for (user_id, prediction) in zip([row[2] for row in sessions_list], model.predict(sessions_list)):
+        user_predictions[user_id] += prediction
+        predictions_per_user[user_id] += 1
+
+    for user_id, predictions_sum in user_predictions.items():
+        # adjust to validating data - data from may ends on 25th of May, but predictions were made for a full month
+        user_predictions[user_id] = predictions_sum / (predictions_per_user[user_id] or 1)
+
+    return user_predictions
 
 
 if __name__ == "__main__":
-    model = learn(sessions_learn)
-    validate(model, sessions_validate_list)
+    modelB = ModelB()
+    modelB.generate_model(products_data, deliveries_data, sessions_data, users_data)
+    print(modelB.predict(products_data, deliveries_data, sessions_data, users_data))
+    # validate(model, sessions_validate_list)

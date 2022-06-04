@@ -16,9 +16,14 @@ class ModelA(Model):
                 sessions: DataFrame,
                 users: DataFrame) -> dict[str, float]:
         # Returns prediction for input data
-        pass
 
-    def generate_model(self):
+        return self.model
+
+    def generate_model(self,
+                products: DataFrame,
+                deliveries: DataFrame,
+                sessions: DataFrame,
+                users: DataFrame):
         # Calculates self.model
         self.model = None
 
@@ -44,8 +49,6 @@ sessions_validate = sessions_validate[sessions_validate["timestamp"].dt.month ==
 sessions_validate_period = sessions_validate.max()["timestamp"].day
 
 
-def predict(data):
-    return None
 
 
 def learn(sessions_learn):
