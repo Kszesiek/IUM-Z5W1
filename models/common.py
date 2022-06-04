@@ -2,8 +2,9 @@ from pandas import DataFrame
 
 
 class Model:
-    def __init__(self):
+    def __init__(self, file_path: str):
         self._model = None
+        self._file_path: str = file_path
 
     def predict(self,
                 products: DataFrame,
@@ -20,9 +21,14 @@ class Model:
                 users: DataFrame):
         raise Exception("This is an interface method")
 
-    def load_model(self, file_path: str):
-        # Loads binary self.model from file
-        self._model = None  # TODO Write reading from binary file
+    def load_model_from_file(self):
+        with open(self._file_path, "rb") as file:
+            self._model = file.read()
+
+    def save_model_to_file(self):
+        with open(self._file_path, "rb") as file:
+            # self._model = file.write()
+            pass
 
     @property
     def model(self):
@@ -31,3 +37,11 @@ class Model:
     @model.setter
     def model(self, value):
         self._model = value
+
+    @property
+    def file_path(self):
+        return self._file_path
+
+    @file_path.setter
+    def file_path(self, value):
+        self._file_path = value

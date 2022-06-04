@@ -8,8 +8,8 @@ from models.common import Model
 
 
 class ModelB(Model):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, file_path: str):
+        super().__init__(file_path)
 
     def predict(self,
                 products: DataFrame,

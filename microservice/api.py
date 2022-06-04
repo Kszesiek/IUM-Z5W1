@@ -57,6 +57,14 @@ class PredictRequestModel(BaseModel):
     users: list[UserModel]
 
 
+@app.on_event("startup")
+async def startup_event():
+    for model in (model_a, model_b):
+        if model.model is None:
+            if exists(model.file_path):
+                model.load_model_from_file()
+
+
 @app.post("/predict/A")
 async def get_prediction_a(body: PredictRequestModel, request: Request, response: Response):
     products, deliveries, sessions, users = convert_to_dataframe(body)
