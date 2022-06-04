@@ -3,6 +3,7 @@ from random import shuffle
 
 import pandas as pd
 
+
 deliveries_path = "./data/deliveries.jsonl"
 products_path = "./data/products.jsonl"
 sessions_path = "./data/sessions.jsonl"
@@ -36,6 +37,14 @@ def split_data(data):
     subset_2 = data[half_size:]
 
     return subset_1, subset_2
+
+
+def convert_to_dataframe(data):
+    products = pd.DataFrame([vars(product) for product in data.products])
+    deliveries = pd.DataFrame([vars(delivery) for delivery in data.deliveries])
+    sessions = pd.DataFrame([vars(session) for session in data.sessions])
+    users = pd.DataFrame([vars(user) for user in data.users])
+    return products, deliveries, sessions, users
 
 
 if __name__ == "__main__":
