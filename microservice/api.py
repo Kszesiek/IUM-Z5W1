@@ -1,10 +1,9 @@
-from datetime import datetime
 from os.path import exists
 
 import uvicorn
-from fastapi import FastAPI, Request, Response, status, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import FastAPI, Response, status, HTTPException
 
+from microservice.request_models import PredictRequestModel
 from models.model_a import ModelA
 from models.model_b_simplified import ModelB
 
@@ -18,47 +17,6 @@ model_b: ModelB = ModelB(model_b_model_path)
 app = FastAPI()
 
 
-class DeliveryModel(BaseModel):
-    purchase_id: int
-    purchase_timestamp: datetime
-    delivery_timestamp: datetime
-    delivery_company: int
-
-
-class ProductModel(BaseModel):
-    product_id: int
-    product_name: str
-    category_path: str
-    price: float = Field(...)
-    brand: str
-    weight_kg: float
-    optional_attributes: dict[str, str] = Field(...)
-
-
-class SessionModel(BaseModel):
-    session_id: int
-    timestamp: datetime
-    user_id: int
-    product_id: int
-    event_type: str
-    offered_discount: int
-    purchase_id: int = None
-
-
-class UserModel(BaseModel):
-    user_id: int
-    name: str
-    city: str
-    street: str
-
-
-class PredictRequestModel(BaseModel):
-    deliveries: list[DeliveryModel]
-    products: list[ProductModel]
-    sessions: list[SessionModel]
-    users: list[UserModel]
-
-
 @app.on_event("startup")
 async def startup_event():
     for model in (model_a, model_b):
@@ -68,7 +26,7 @@ async def startup_event():
 
 
 @app.post("/predict/A")
-async def get_prediction_a(body: PredictRequestModel, request: Request, response: Response):
+async def get_prediction_a(body: PredictRequestModel, response: Response):
     products, deliveries, sessions, users = convert_to_dataframe(body)
     result = model_a.predict(products, deliveries, sessions, users)
     if result:
