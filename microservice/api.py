@@ -47,10 +47,52 @@ async def get_prediction_b(body: PredictRequestModel, response: Response):
 
 
 @app.post("/predict")
-async def get_prediction_ab(request: Request, response: Response):
-    result = None
-    response.status_code = status.HTTP_200_OK
-    return result
+async def get_prediction_ab(body: PredictRequestModel, response: Response):
+    products, deliveries, sessions, users = convert_to_dataframe(body)
+    users_a, users_b = split_data(users)
+    result_a = model_a.predict(products, deliveries, sessions, users_a)
+    result_b = model_b.predict(products, deliveries, sessions, users_b)
+    result = result_a | result_b
+    if result:
+        response.status_code = status.HTTP_200_OK
+        return result
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No prediction returned.")
+
+
+@app.get("/models/A")
+async def get_model_a_status(response: Response):
+    if model_a.model:
+        response.status_code = status.HTTP_200_OK
+        return {"status": "Model exists."}
+    else:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"status": "Model does not exist."}
+
+
+@app.get("/models/B")
+async def get_model_b_status(response: Response):
+    if model_b.model:
+        response.status_code = status.HTTP_200_OK
+        return {"status": "Model exists."}
+    else:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"status": "Model does not exist."}
+
+
+@app.post("/models/A")
+async def generate_model_a(body: PredictRequestModel, response: Response):
+    products, deliveries, sessions, users = convert_to_dataframe(body)
+    model_a.generate_model(products, deliveries, sessions, users)
+    model_a.save_model_to_file()
+    response.status_code = status.HTTP_202_ACCEPTED
+
+
+@app.post("/models/B")
+async def generate_model_b(body: PredictRequestModel, response: Response):
+    products, deliveries, sessions, users = convert_to_dataframe(body)
+    model_b.generate_model(products, deliveries, sessions, users)
+    model_b.save_model_to_file()
+    response.status_code = status.HTTP_202_ACCEPTED
 
 
 if __name__ == "__main__":
