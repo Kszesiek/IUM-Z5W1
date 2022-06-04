@@ -31,8 +31,9 @@ def save_json_to_file(file_name, json_object):
 
 def split_data(data):
     shuffle(data)
-    subset_1 = data[:len(data)//2]
-    subset_2 = data[len(data)//2:]
+    half_size = len(data) // 2
+    subset_1 = data[:half_size]
+    subset_2 = data[half_size:]
 
     return subset_1, subset_2
 
