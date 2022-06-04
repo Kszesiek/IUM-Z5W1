@@ -3,7 +3,7 @@ from pandas import DataFrame
 
 class Model:
     def __init__(self):
-        self.model = None
+        self._model = None
 
     def predict(self,
                 products: DataFrame,
@@ -18,12 +18,12 @@ class Model:
 
     def load_model(self, file_path: str):
         # Loads binary self.model from file
-        self.model = None  # TODO Write reading from binary file
+        self._model = None  # TODO Write reading from binary file
 
     @property
     def model(self):
-        return self.model
+        return self._model
 
     @model.setter
     def model(self, value):
-        self.model = value
+        self._model = value
