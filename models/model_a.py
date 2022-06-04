@@ -63,6 +63,14 @@ class ModelA(Model):
         spending_factors_perc = {key: val / max_factor * 100 for (key, val) in spending_factors.items()}
         self.model = {key: val * 30 / learning_days for (key, val) in spending_factors.items()}
 
+    def load_model_from_file(self):
+        with open(self.file_path, "rb") as file:
+            self._model = pickle.load(file)
+
+    def save_model_to_file(self):
+        with open(self._file_path, "wb") as file:
+            pickle.dump(self._model, file, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 if __name__ == "__main__":
     deliveries_path = "./data/deliveries.jsonl"

@@ -22,13 +22,10 @@ class Model:
         raise Exception("This is an interface method")
 
     def load_model_from_file(self):
-        with open(self._file_path, "rb") as file:
-            self._model = file.read()
+        raise Exception("This is an interface method")
 
     def save_model_to_file(self):
-        with open(self._file_path, "rb") as file:
-            # self._model = file.write()
-            pass
+        raise Exception("This is an interface method")
 
     def verify(self,
                products: DataFrame,
