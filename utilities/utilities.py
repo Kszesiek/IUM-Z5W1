@@ -1,4 +1,5 @@
 import json
+from random import shuffle
 
 import pandas as pd
 
@@ -26,6 +27,14 @@ def create_json_request():
 def save_json_to_file(file_name, json_object):
     with open(file_name, "w+", encoding="utf-8") as file:
         file.write(json.dumps(json_object, indent=4, sort_keys=True))
+
+
+def split_data(data):
+    shuffle(data)
+    subset_1 = data[:len(data)//2]
+    subset_2 = data[len(data)//2:]
+
+    return subset_1, subset_2
 
 
 if __name__ == "__main__":
