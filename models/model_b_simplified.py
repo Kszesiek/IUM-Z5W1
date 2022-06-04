@@ -50,6 +50,48 @@ class ModelB(Model):
         clf = tree.DecisionTreeRegressor()
         self.model = clf.fit(fitting_data, y)
 
+    def verify(self,
+               products: DataFrame,
+               deliveries: DataFrame,
+               sessions: DataFrame,
+               users: DataFrame):
+        # Verifies how good is the model
+
+        predictions = self.predict(products, deliveries, sessions, users)
+
+        sessions = pd.merge(sessions, products, on="product_id")
+        sessions = pd.merge(sessions, users, on="user_id").sort_values(by=['timestamp'], ascending=True)
+
+        total_for_user = {user_id: 0 for user_id in users_data["user_id"]}
+
+        for session in sessions.iterrows():
+            session = session[1]
+            user_id = session["user_id"]
+            if session["event_type"] == "VIEW_PRODUCT":
+                continue
+            total_for_user[user_id] += session["price"] * (1 - session["offered_discount"] / 100)
+
+        total = 0
+        sum_ratio = 0
+        for user_id in users["user_id"]:
+            if total_for_user[user_id] == 0:
+                ratio = 0 if predictions[user_id] < 10 else min(predictions[user_id] / 10, 1)
+            else:
+                ratio = (predictions[user_id] - total_for_user[user_id]) / max(predictions[user_id], total_for_user[user_id])
+
+            print(f"user {user_id}: {ratio:3.2f} (expected: {total_for_user[user_id]:3.1f}, got: {predictions[user_id]:3.1f})")
+            total += total_for_user[user_id]
+            sum_ratio += abs(ratio)
+        print(f"dokładność: {100 * (1 - sum_ratio / len(users_data.index)):6.2f}%")
+        print(f"suma modelu: {sum(predictions.values()):9.2f}")
+        print(f"suma actual: {total:9.2f}")
+
+        # dokładność:  45.50%
+        # suma modelu: 295133.39
+        # suma actual: 219801.26
+
+        return 1 - sum_ratio / len(users_data.index)
+
 
 def convert_data_from_dataframe_to_list(dataframe_data):
     data_as_list = []
@@ -101,6 +143,9 @@ if __name__ == "__main__":
     sessions_data = pd.read_json(sessions_path, lines=True)
     users_data = pd.read_json(users_path, lines=True)
 
+    sessions_learn = sessions_data[sessions_data["timestamp"].dt.month != 5]
+    sessions_verify = sessions_data[sessions_data["timestamp"].dt.month == 5]
+
     modelB = ModelB()
-    modelB.generate_model(products_data, deliveries_data, sessions_data, users_data)
-    print(modelB.predict(products_data, deliveries_data, sessions_data, users_data))
+    modelB.generate_model(products_data, deliveries_data, sessions_learn, users_data)
+    print(modelB.verify(products_data, deliveries_data, sessions_verify, users_data))
