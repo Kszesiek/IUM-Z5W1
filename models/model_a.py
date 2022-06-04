@@ -17,7 +17,7 @@ class ModelA(Model):
                 users: DataFrame) -> dict[str, float]:
         # Returns prediction for input data
 
-        return self.model
+        return {user_id: self.model[user_id] for user_id in users["user_id"]}
 
     def generate_model(self,
                 products: DataFrame,
