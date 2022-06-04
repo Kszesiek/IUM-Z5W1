@@ -30,8 +30,9 @@ class ModelB(Model):
         predictions_per_user = {user_id: 0 for user_id in users["user_id"]}
 
         for (user_id, prediction) in zip([row[2] for row in sessions_list], self.model.predict(sessions_list)):
-            user_predictions[user_id] += prediction
-            predictions_per_user[user_id] += 1
+            if user_id in users["user_id"].values:
+                user_predictions[user_id] += prediction
+                predictions_per_user[user_id] += 1
 
         for user_id, predictions_sum in user_predictions.items():
             user_predictions[user_id] = predictions_sum / (predictions_per_user[user_id] or 1)
