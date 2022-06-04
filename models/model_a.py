@@ -1,6 +1,27 @@
 import math
 from datetime import timedelta, datetime
 import pandas as pd
+from pandas import DataFrame
+
+from models.common import Model
+
+
+class ModelA(Model):
+    def __init__(self):
+        super().__init__()
+
+    def predict(self,
+                products: DataFrame,
+                deliveries: DataFrame,
+                sessions: DataFrame,
+                users: DataFrame) -> dict[str, float]:
+        # Returns prediction for input data
+        pass
+
+    def generate_model(self):
+        # Calculates self.model
+        self.model = None
+
 
 deliveries_path = "./data/deliveries.jsonl"
 products_path = "./data/products.jsonl"
@@ -86,6 +107,7 @@ def validate(model, sessions_validate):
     # suma modelu: 204590.67
     # suma actual: 219801.26
 
+
 if __name__ == "__main__":
-    model = learn(sessions_learn)
-    validate(model, sessions_validate)
+    model1 = learn(sessions_learn)
+    validate(model1, sessions_validate)

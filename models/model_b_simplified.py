@@ -1,7 +1,28 @@
 from datetime import datetime, timedelta
 
 import pandas as pd
+from pandas import DataFrame
 from sklearn import tree
+
+from models.common import Model
+
+
+class ModelB(Model):
+    def __init__(self):
+        super().__init__()
+
+    def predict(self,
+                products: DataFrame,
+                deliveries: DataFrame,
+                sessions: DataFrame,
+                users: DataFrame) -> dict[str, float]:
+        # Returns prediction for input data
+        pass
+
+    def generate_model(self):
+        # Calculates self.model
+        self.model = None
+
 
 deliveries_path = "./data/deliveries.jsonl"
 products_path = "./data/products.jsonl"
@@ -22,7 +43,8 @@ sessions_validate = sessions_data
 
 sessions_learn = sessions_learn[sessions_learn["timestamp"].dt.month != 5]
 sessions_validate = sessions_validate[sessions_validate["timestamp"].dt.month == 5]
-sessions_validate_period = sessions_validate.max()["timestamp"].day
+sessions_validate_period = sessions_validate["timestamp"].max().day
+
 
 def convert_data_from_dataframe_to_list(dataframe_data):
     data_as_list = []
