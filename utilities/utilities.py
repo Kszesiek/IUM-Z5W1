@@ -33,11 +33,11 @@ def save_json_to_file(file_name, json_object):
         file.write(json.dumps(json_object, indent=4, sort_keys=True))
 
 
-def split_data(data):
+def split_data(data, factor=0.5):
     shuffle(data)
-    half_size = len(data) // 2
-    subset_1 = data[:half_size]
-    subset_2 = data[half_size:]
+    size = round(len(data) * factor)
+    subset_1 = data[:size]
+    subset_2 = data[size:]
 
     return subset_1, subset_2
 
