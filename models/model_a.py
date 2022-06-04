@@ -20,16 +20,16 @@ sessions_validate = sessions_data
 
 sessions_learn = sessions_learn[sessions_learn["timestamp"].dt.month != 5]
 sessions_validate = sessions_validate[sessions_validate["timestamp"].dt.month == 5]
+sessions_validate_period = sessions_validate.max()["timestamp"].day
 
 
 def predict(data):
     return None
 
 
-def learn():
+def learn(sessions_learn):
     next_purchase = {user_id: datetime.now() for user_id in users_data["user_id"]}
     spending_factors = {user_id: 0 for user_id in users_data["user_id"]}
-    buy_session_counter = {user_id: 0 for user_id in users_data["user_id"]}
     actual_total = 0
 
     learning_days = (max(sessions_learn["timestamp"]) - min(sessions_learn["timestamp"])).days
@@ -39,7 +39,6 @@ def learn():
         user_id = session["user_id"]
         if session["event_type"] == "VIEW_PRODUCT":
             continue
-        buy_session_counter[user_id] += 1
         actual_total += session["price"] * (1 - session["offered_discount"] / 100)
         if next_purchase[user_id]:
             time_difference = max(next_purchase[user_id] - session["timestamp"], timedelta(hours=24))
@@ -54,12 +53,12 @@ def learn():
 
     max_factor = max(spending_factors.values())
     spending_factors_perc = {key: val / max_factor * 100 for (key, val) in spending_factors.items()}
-    monthly_est = {key: val * 30 / learning_days for (key, val) in spending_factors.items()}
+    monthly_est = {key: val * sessions_validate_period / learning_days for (key, val) in spending_factors.items()}
 
     return monthly_est
 
 
-def validate(model):
+def validate(model, sessions_validate):
     total_for_user = {user_id: 0 for user_id in users_data["user_id"]}
 
     for session in sessions_validate.iterrows():
@@ -83,7 +82,10 @@ def validate(model):
     print(f"suma modelu: {sum(model.values()):9.2f}")
     print(f"suma actual: {total:9.2f}")
 
+    # dokładność:  39.77%
+    # suma modelu: 204590.67
+    # suma actual: 219801.26
 
 if __name__ == "__main__":
-    model = learn()
-    validate(model)
+    model = learn(sessions_learn)
+    validate(model, sessions_validate)
