@@ -26,4 +26,4 @@ class Model:
 
     @model.setter
     def model(self, value):
-        self._model = value
+        self.model = value
