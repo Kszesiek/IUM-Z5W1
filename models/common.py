@@ -13,7 +13,11 @@ class Model:
         # Returns prediction for input data
         raise Exception("This is an interface method")
 
-    def generate_model(self):
+    def generate_model(self,
+                products: DataFrame,
+                deliveries: DataFrame,
+                sessions: DataFrame,
+                users: DataFrame):
         raise Exception("This is an interface method")
 
     def load_model(self, file_path: str):
