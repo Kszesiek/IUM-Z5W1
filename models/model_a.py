@@ -1,5 +1,6 @@
 import math
-from datetime import timedelta, datetime
+import pickle
+from datetime import timedelta, datetime, timezone
 import pandas as pd
 from pandas import DataFrame
 
@@ -33,7 +34,7 @@ class ModelA(Model):
         sessions = pd.merge(sessions, products, on="product_id").drop(
             columns=['product_name', 'category_path']).sort_values(by=['timestamp'], ascending=False)
 
-        next_purchase = {user_id: datetime.now() for user_id in users["user_id"]}
+        next_purchase = {user_id: datetime.now(timezone.utc) for user_id in users["user_id"]}
         spending_factors = {user_id: 0 for user_id in users["user_id"]}
         actual_total = 0
 
@@ -42,18 +43,18 @@ class ModelA(Model):
 
         for session in sessions.iterrows():
             session = session[1]
-            user_id = session["user_id"]
-            if session["event_type"] == "VIEW_PRODUCT":
-                continue
-            actual_total += session["price"] * (1 - session["offered_discount"] / 100)
-            if next_purchase[user_id]:
-                time_difference = max(next_purchase[user_id] - session["timestamp"], timedelta(hours=24))
-                time_difference = time_difference.total_seconds() / 86400
-                days_from_today = (last_session_timestamp - session["timestamp"]).total_seconds() / 86400 / 30
-                favor_newer_records_with_tanh = (0.5 + 0.5 * math.tanh(- days_from_today / 2 + 2))
-                spending_factors[user_id] += session["price"] * (
-                        1 - session["offered_discount"] / 100) / time_difference * favor_newer_records_with_tanh
-            next_purchase[user_id] = session["timestamp"]
+            if (user_id := session["user_id"]) in users["user_id"].tolist():
+                if session["event_type"] == "VIEW_PRODUCT":
+                    continue
+                actual_total += session["price"] * (1 - session["offered_discount"] / 100)
+                if next_purchase.get(user_id):
+                    time_difference = max(next_purchase[user_id] - session["timestamp"], timedelta(hours=24))
+                    time_difference = time_difference.total_seconds() / 86400
+                    days_from_today = (last_session_timestamp - session["timestamp"]).total_seconds() / 86400 / 30
+                    favor_newer_records_with_tanh = (0.5 + 0.5 * math.tanh(- days_from_today / 2 + 2))
+                    spending_factors[user_id] += session["price"] * (
+                            1 - session["offered_discount"] / 100) / time_difference * favor_newer_records_with_tanh
+                next_purchase[user_id] = session["timestamp"]
 
         correction = actual_total / sum(spending_factors.values())
         spending_factors = {user_id: factor * correction for (user_id, factor) in spending_factors.items()}
