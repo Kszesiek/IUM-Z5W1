@@ -23,9 +23,15 @@ def create_json_request():
     sessions = json.loads(sessions_data.to_json(orient='records', date_unit='ms'))
     products = json.loads(products_data.to_json(orient='records'))
     deliveries = json.loads(deliveries_data.to_json(orient='records'))
-    json_object = {"users": users, "sessions": sessions, "products": products, "deliveries": deliveries}
 
-    return json_object
+    users1, users2 = split_data(users, factor=0.8)
+
+    training_set, validation_set = ({"users": user_set,
+                                     "sessions": sessions,
+                                     "products": products,
+                                     "deliveries": deliveries} for user_set in (users1, users2))
+
+    return training_set, validation_set
 
 
 def save_json_to_file(file_name, json_object):
@@ -66,5 +72,6 @@ def catch_exceptions(function):
 
 
 if __name__ == "__main__":
-    json_request = create_json_request()
-    save_json_to_file("./data/requests/data_request.json", json_request)
+    training, validation = create_json_request()
+    save_json_to_file("./data/requests/training_set.json", training)
+    save_json_to_file("./data/requests/validation_set.json", validation)
