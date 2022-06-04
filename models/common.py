@@ -51,20 +51,38 @@ class Model:
 
         total = 0
         sum_ratio = 0
+        users_statistics = {}
+        avg_underestimation = []
+        avg_overestimation = []
         for user_id in users["user_id"]:
             if total_for_user[user_id] == 0:
                 ratio = 0 if predictions[user_id] < 10 else min(predictions[user_id] / 10, 1)
             else:
                 ratio = (predictions[user_id] - total_for_user[user_id]) / max(predictions[user_id], total_for_user[user_id])
 
+            if predictions[user_id] > total_for_user[user_id]:
+                avg_overestimation.append(predictions[user_id] - total_for_user[user_id])
+            else:
+                avg_underestimation.append(total_for_user[user_id] - predictions[user_id])
+
             print(f"user {user_id}: {ratio:3.2f} (expected: {total_for_user[user_id]:3.1f}, got: {predictions[user_id]:3.1f})")
             total += total_for_user[user_id]
+            users_statistics[user_id] = {
+                "accuracy": ratio,
+                "model_prediction": predictions[user_id],
+                "actual_spendings": total_for_user[user_id],
+            }
             sum_ratio += abs(ratio)
-        print(f"dokładność: {100 * (1 - sum_ratio / len(users.index)):6.2f}%")
-        print(f"suma modelu: {sum(predictions.values()):9.2f}")
-        print(f"suma actual: {total:9.2f}")
-
-        return 1 - sum_ratio / len(users.index)
+        avg_underestimation = sum(avg_underestimation) / len(avg_underestimation)
+        avg_overestimation = sum(avg_overestimation) / len(avg_overestimation)
+        return {
+            "accuracy": 100 * (1 - sum_ratio / len(users.index)),
+            "model_sum": sum(predictions.values()),
+            "actual_sum": total,
+            "avg_underestimation": avg_underestimation,
+            "avg_overestimation": avg_overestimation,
+            "users": users_statistics
+        }
 
     @property
     def model(self):
