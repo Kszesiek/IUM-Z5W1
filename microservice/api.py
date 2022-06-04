@@ -1,4 +1,5 @@
 from datetime import datetime
+from os.path import exists
 
 import uvicorn
 from fastapi import FastAPI, Request, Response, status, HTTPException
@@ -7,11 +8,12 @@ from pydantic import BaseModel, Field
 from models.model_a import ModelA
 from models.model_b_simplified import ModelB
 
-from utilities.utilities import convert_to_dataframe
+from utilities.utilities import convert_to_dataframe, split_data
 
-model_a: ModelA = ModelA()
-model_b: ModelB = ModelB()
-
+model_a_model_path = "./data/binary_model_a.bin"
+model_b_model_path = "./data/binary_model_b.bin"
+model_a: ModelA = ModelA(model_a_model_path)
+model_b: ModelB = ModelB(model_b_model_path)
 
 app = FastAPI()
 
@@ -83,8 +85,7 @@ async def get_prediction_b(body: PredictRequestModel, response: Response):
     if result:
         response.status_code = status.HTTP_200_OK
         return result
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No prediction returned.")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No prediction returned.")
 
 
 @app.post("/predict")
