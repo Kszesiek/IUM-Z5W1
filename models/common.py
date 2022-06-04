@@ -45,3 +45,13 @@ class Model:
     @file_path.setter
     def file_path(self, value):
         self._file_path = value
+
+
+class ModelException(Exception):
+    def __init__(self, message: str = ""):
+        super(ModelException, self).__init__(message)
+
+
+class ModelNotInitialisedException(Exception):
+    def __init__(self, message: str = ""):
+        super(ModelNotInitialisedException, self).__init__(message)

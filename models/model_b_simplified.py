@@ -4,19 +4,23 @@ import pandas as pd
 from pandas import DataFrame
 from sklearn import tree
 
-from models.common import Model
+from models.common import Model, ModelNotInitialisedException
+from utilities.utilities import catch_exceptions
 
 
 class ModelB(Model):
     def __init__(self, file_path: str):
         super().__init__(file_path)
 
+    @catch_exceptions
     def predict(self,
                 products: DataFrame,
                 deliveries: DataFrame,
                 sessions: DataFrame,
                 users: DataFrame) -> dict[str, float]:
         # Returns prediction for input data
+        if not self._model:
+            raise ModelNotInitialisedException("Model has not been initialised.")
 
         sessions = pd.merge(sessions, products, on="product_id")
         sessions = pd.merge(sessions, users, on="user_id").sort_values(by=['timestamp'], ascending=True)

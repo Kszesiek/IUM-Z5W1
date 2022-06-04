@@ -1,8 +1,11 @@
+import functools
 import json
-from random import shuffle
-
 import pandas as pd
 
+from random import shuffle
+from fastapi import status, HTTPException
+
+from models.common import ModelNotInitialisedException
 
 deliveries_path = "./data/deliveries.jsonl"
 products_path = "./data/products.jsonl"
@@ -45,6 +48,21 @@ def convert_to_dataframe(data):
     sessions = pd.DataFrame([vars(session) for session in data.sessions])
     users = pd.DataFrame([vars(user) for user in data.users])
     return products, deliveries, sessions, users
+
+
+def catch_exceptions(function):
+    """A general decorator function to catch and signalise model exceptions"""
+
+    @functools.wraps(function)
+    def wrapper(*args, **kwargs):
+        try:
+            result = function(*args, **kwargs)
+        except ModelNotInitialisedException:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="The model has not been initialised.")
+        return result
+
+    return wrapper
 
 
 if __name__ == "__main__":
