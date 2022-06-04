@@ -16,7 +16,7 @@ users_path = "./data/users.jsonl"
 def create_json_request():
     deliveries_data = pd.read_json(deliveries_path, lines=True)
     products_data = pd.read_json(products_path, lines=True)
-    sessions_data = pd.read_json(sessions_path, lines=True)
+    sessions_data = pd.read_json(sessions_path, lines=True).sort_values(by=["timestamp"])
     users_data = pd.read_json(users_path, lines=True)
 
     users = json.loads(users_data.to_json(orient='records'))
@@ -24,12 +24,12 @@ def create_json_request():
     products = json.loads(products_data.to_json(orient='records'))
     deliveries = json.loads(deliveries_data.to_json(orient='records'))
 
-    users1, users2 = split_data(users, factor=0.8)
+    sessions1, sessions2 = split_data(sessions, factor=0.8, random=False)
 
-    training_set, validation_set = ({"users": user_set,
-                                     "sessions": sessions,
+    training_set, validation_set = ({"users": users,
+                                     "sessions": sessions_set,
                                      "products": products,
-                                     "deliveries": deliveries} for user_set in (users1, users2))
+                                     "deliveries": deliveries} for sessions_set in (sessions1, sessions2))
 
     return training_set, validation_set
 
@@ -39,8 +39,9 @@ def save_json_to_file(file_name, json_object):
         file.write(json.dumps(json_object, indent=4, sort_keys=True))
 
 
-def split_data(data, factor=0.5):
-    shuffle(data)
+def split_data(data, factor=0.5, random=True):
+    if random:
+        shuffle(data)
     size = round(len(data) * factor)
     subset_1 = data[:size]
     subset_2 = data[size:]
