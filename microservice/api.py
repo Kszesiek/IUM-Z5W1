@@ -22,7 +22,7 @@ class ProductModel(BaseModel):
     price: float = Field(...)
     brand: str
     weight_kg: float
-    optional_attributes: Dict[str, str] = Field(...)
+    optional_attributes: dict[str, str] = Field(...)
 
 
 class SessionModel(BaseModel):
@@ -43,10 +43,10 @@ class UserModel(BaseModel):
 
 
 class PredictRequestModel(BaseModel):
-    deliveries: List[DeliveryModel]
-    products: List[ProductModel]
-    sessions: List[SessionModel]
-    users: List[UserModel]
+    deliveries: list[DeliveryModel]
+    products: list[ProductModel]
+    sessions: list[SessionModel]
+    users: list[UserModel]
 
 
 @app.post("/predict/A")
