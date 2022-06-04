@@ -4,6 +4,7 @@ import pandas as pd
 from pandas import DataFrame
 from sklearn import tree
 
+from microservice.api import model_b_model_path
 from models.common import Model, ModelNotInitialisedException
 from utilities.utilities import catch_exceptions
 
@@ -105,6 +106,6 @@ if __name__ == "__main__":
     sessions_data = pd.read_json(sessions_path, lines=True)
     users_data = pd.read_json(users_path, lines=True)
 
-    modelB = ModelB()
+    modelB = ModelB(model_b_model_path)
     modelB.generate_model(products_data, deliveries_data, sessions_data, users_data)
     print(modelB.predict(products_data, deliveries_data, sessions_data, users_data))

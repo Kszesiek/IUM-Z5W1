@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 import pandas as pd
 from pandas import DataFrame
 
+from microservice.api import model_a_model_path
 from models.common import Model, ModelNotInitialisedException
 from utilities.utilities import catch_exceptions
 
@@ -74,6 +75,6 @@ if __name__ == "__main__":
     sessions_data = pd.read_json(sessions_path, lines=True)
     users_data = pd.read_json(users_path, lines=True)
 
-    modelA = ModelA()
+    modelA = ModelA(model_a_model_path)
     modelA.generate_model(products_data, deliveries_data, sessions_data, users_data)
     print(modelA.predict(products_data, deliveries_data, sessions_data, users_data))
