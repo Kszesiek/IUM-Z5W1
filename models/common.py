@@ -3,7 +3,7 @@ from pandas import DataFrame
 
 class Model:
     def __init__(self):
-        self.model = None
+        self._model = None
 
     def predict(self,
                 products: DataFrame,
