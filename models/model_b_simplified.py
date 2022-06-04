@@ -1,10 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pandas as pd
 from pandas import DataFrame
 from sklearn import tree
 
-from microservice.api import model_b_model_path
 from models.common import Model, ModelNotInitialisedException
 from utilities.utilities import catch_exceptions
 
@@ -109,6 +108,6 @@ if __name__ == "__main__":
     sessions_learn = sessions_data[sessions_data["timestamp"].dt.month != 5]
     sessions_verify = sessions_data[sessions_data["timestamp"].dt.month == 5]
 
-    modelB = ModelB(model_b_model_path)
+    modelB = ModelB("./data/binary_model_b.bin")
     modelB.generate_model(products_data, deliveries_data, sessions_learn, users_data)
     print(modelB.verify(products_data, deliveries_data, sessions_verify, users_data))

@@ -3,7 +3,6 @@ from datetime import timedelta, datetime
 import pandas as pd
 from pandas import DataFrame
 
-from microservice.api import model_a_model_path
 from models.common import Model, ModelNotInitialisedException
 from utilities.utilities import catch_exceptions
 
@@ -78,6 +77,6 @@ if __name__ == "__main__":
     sessions_learn = sessions_data[sessions_data["timestamp"].dt.month != 5]
     sessions_verify = sessions_data[sessions_data["timestamp"].dt.month == 5]
 
-    modelA = ModelA(model_a_model_path)
+    modelA = ModelA("./data/binary_model_a.bin")
     modelA.generate_model(products_data, deliveries_data, sessions_data, users_data)
     print(modelA.verify(products_data, deliveries_data, sessions_verify, users_data))
