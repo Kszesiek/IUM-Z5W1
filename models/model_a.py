@@ -24,10 +24,10 @@ class ModelA(Model):
         return {user_id: self.model[user_id] for user_id in users["user_id"]}
 
     def generate_model(self,
-                products: DataFrame,
-                deliveries: DataFrame,
-                sessions: DataFrame,
-                users: DataFrame):
+                       products: DataFrame,
+                       deliveries: DataFrame,
+                       sessions: DataFrame,
+                       users: DataFrame):
         # Calculates self.model
 
         sessions = pd.merge(sessions, products, on="product_id").drop(
@@ -52,7 +52,7 @@ class ModelA(Model):
                 days_from_today = (last_session_timestamp - session["timestamp"]).total_seconds() / 86400 / 30
                 favor_newer_records_with_tanh = (0.5 + 0.5 * math.tanh(- days_from_today / 2 + 2))
                 spending_factors[user_id] += session["price"] * (
-                            1 - session["offered_discount"] / 100) / time_difference * favor_newer_records_with_tanh
+                        1 - session["offered_discount"] / 100) / time_difference * favor_newer_records_with_tanh
             next_purchase[user_id] = session["timestamp"]
 
         correction = actual_total / sum(spending_factors.values())

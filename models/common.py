@@ -15,10 +15,10 @@ class Model:
         raise Exception("This is an interface method")
 
     def generate_model(self,
-                products: DataFrame,
-                deliveries: DataFrame,
-                sessions: DataFrame,
-                users: DataFrame):
+                       products: DataFrame,
+                       deliveries: DataFrame,
+                       sessions: DataFrame,
+                       users: DataFrame):
         raise Exception("This is an interface method")
 
     def load_model_from_file(self):

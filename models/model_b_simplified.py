@@ -39,10 +39,10 @@ class ModelB(Model):
         return user_predictions
 
     def generate_model(self,
-                products: DataFrame,
-                deliveries: DataFrame,
-                sessions: DataFrame,
-                users: DataFrame):
+                       products: DataFrame,
+                       deliveries: DataFrame,
+                       sessions: DataFrame,
+                       users: DataFrame):
         # Calculates self.model
 
         sessions = pd.merge(sessions, products, on="product_id")
