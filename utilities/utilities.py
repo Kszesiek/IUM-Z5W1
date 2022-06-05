@@ -8,13 +8,8 @@ from fastapi import status, HTTPException
 
 from models.common import ModelNotInitialisedException
 
-deliveries_path = "./data/deliveries.jsonl"
-products_path = "./data/products.jsonl"
-sessions_path = "./data/sessions.jsonl"
-users_path = "./data/users.jsonl"
 
-
-def create_json_request():
+def create_json_request(deliveries_path, products_path, sessions_path, users_path):
     deliveries_data = pd.read_json(deliveries_path, lines=True)
     products_data = pd.read_json(products_path, lines=True)
     sessions_data = pd.read_json(sessions_path, lines=True).sort_values(by=["timestamp"])
