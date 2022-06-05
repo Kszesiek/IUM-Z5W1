@@ -2,6 +2,7 @@ import functools
 import json
 import pandas as pd
 
+from pandas.core.frame import DataFrame
 from random import shuffle
 from fastapi import status, HTTPException
 
@@ -41,7 +42,10 @@ def save_json_to_file(file_name, json_object):
 
 def split_data(data, factor=0.5, random=True):
     if random:
-        shuffle(data)
+        if type(data) == DataFrame:
+            data.sample(frac=1)
+        else:
+            shuffle(data)
     size = round(len(data) * factor)
     subset_1 = data[:size]
     subset_2 = data[size:]
