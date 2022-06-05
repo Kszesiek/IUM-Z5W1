@@ -23,6 +23,7 @@ async def startup_event():
         if model.model is None:
             if exists(model.file_path):
                 model.load_model_from_file()
+                print(f"Loaded {model.file_path} to model.")
 
 
 @app.post("/predict/A")
