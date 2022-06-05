@@ -81,6 +81,22 @@ async def get_validation_b(body: PredictRequestModel, response: Response):
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No prediction returned.")
 
 
+@app.post("/verify")
+async def get_validation(body: PredictRequestModel, response: Response):
+    products, deliveries, sessions, users = convert_to_dataframe(body)
+    users_a, users_b = split_data(users)
+    result_a = model_a.verify(products, deliveries, sessions, users_a)
+    result_b = model_b.verify(products, deliveries, sessions, users_b)
+    result = {
+        'model_a': result_a,
+        'model_b': result_b
+    }
+    if result:
+        response.status_code = status.HTTP_200_OK
+        return result
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No prediction returned.")
+
+
 @app.get("/models/A")
 async def get_model_a_status(response: Response):
     if model_a.model:
