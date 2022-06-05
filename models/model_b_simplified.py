@@ -1,3 +1,4 @@
+import pickle
 from datetime import datetime
 
 import pandas as pd
@@ -54,8 +55,13 @@ class ModelB(Model):
         clf = tree.DecisionTreeRegressor()
         self.model = clf.fit(fitting_data, y)
 
+    def load_model_from_file(self):
+        with open(self.file_path, "rb") as file:
+            self._model = pickle.load(file)
+
     def save_model_to_file(self):
-        print("Not saving model because I don't know how")
+        with open(self._file_path, "wb") as file:
+            pickle.dump(self._model, file, protocol=pickle.HIGHEST_PROTOCOL)
 
     def convert_data_from_dataframe_to_list(self, dataframe_data):
         data_as_list = []
