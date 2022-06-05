@@ -24,7 +24,7 @@ class ModelB(Model):
 
         sessions = pd.merge(sessions, products, on="product_id")
         sessions = pd.merge(sessions, users, on="user_id").sort_values(by=['timestamp'], ascending=True)
-        sessions_list = convert_data_from_dataframe_to_list(sessions)
+        sessions_list = self.convert_data_from_dataframe_to_list(sessions)
 
         user_predictions = {user_id: 0 for user_id in users["user_id"]}
         predictions_per_user = {user_id: 0 for user_id in users["user_id"]}
@@ -49,49 +49,50 @@ class ModelB(Model):
         sessions = pd.merge(sessions, products, on="product_id")
         sessions = pd.merge(sessions, users, on="user_id").sort_values(by=['timestamp'], ascending=True)
 
-        y = prepare_labels(sessions)
-        fitting_data = convert_data_from_dataframe_to_list(sessions)
+        y = self.prepare_labels(sessions)
+        fitting_data = self.convert_data_from_dataframe_to_list(sessions)
         clf = tree.DecisionTreeRegressor()
         self.model = clf.fit(fitting_data, y)
 
+    def save_model_to_file(self):
+        print("Not saving model because I don't know how")
 
-def convert_data_from_dataframe_to_list(dataframe_data):
-    data_as_list = []
-    dataframe_data = dataframe_data.drop(
-        columns=['name', 'city', 'street', 'product_name', 'category_path', 'brand', 'optional_attributes', 'purchase_id'])
-    for session in dataframe_data.iterrows():
-        session = session[1]
-        row = session.tolist()
-        row[1] = int(round(datetime.now().timestamp() - row[1].timestamp()))
-        row[4] = 1 if row[4] == 'BUY_PRODUCT' else 0
-        data_as_list.append(row)
-
-    return data_as_list
-
-
-def prepare_labels(dataframe):
-    labels = []
-
-    min_month = dataframe["timestamp"].min().month
-    max_month = dataframe["timestamp"].max().month
-
-    for month in range(min_month, max_month + 1):
-        expenses = {user_id: 0 for user_id in users_data["user_id"]}
-        sessions_this_month = dataframe[dataframe["timestamp"].dt.month == month]
-
-        for session in sessions_this_month.iterrows():
+    def convert_data_from_dataframe_to_list(self, dataframe_data):
+        data_as_list = []
+        dataframe_data = dataframe_data.drop(
+            columns=['name', 'city', 'street', 'product_name', 'category_path', 'brand', 'optional_attributes', 'purchase_id'])
+        for session in dataframe_data.iterrows():
             session = session[1]
-            user_id = session["user_id"]
-            if session["event_type"] == "VIEW_PRODUCT":
-                continue
-            expenses[user_id] += session["price"] * (1 - session["offered_discount"] / 100)
+            row = session.tolist()
+            row[1] = int(round(datetime.now().timestamp() - row[1].timestamp()))
+            row[4] = 1 if row[4] == 'BUY_PRODUCT' else 0
+            data_as_list.append(row)
 
-        for session in sessions_this_month.iterrows():
-            session = session[1]
-            user_id = session["user_id"]
-            labels.append(expenses[user_id])
+        return data_as_list
 
-    return labels
+    def prepare_labels(self, dataframe):
+        labels = []
+
+        min_month = dataframe["timestamp"].min().month
+        max_month = dataframe["timestamp"].max().month
+
+        for month in range(min_month, max_month + 1):
+            expenses = {user_id: 0 for user_id in dataframe["user_id"]}
+            sessions_this_month = dataframe[dataframe["timestamp"].dt.month == month]
+
+            for session in sessions_this_month.iterrows():
+                session = session[1]
+                user_id = session["user_id"]
+                if session["event_type"] == "VIEW_PRODUCT":
+                    continue
+                expenses[user_id] += session["price"] * (1 - session["offered_discount"] / 100)
+
+            for session in sessions_this_month.iterrows():
+                session = session[1]
+                user_id = session["user_id"]
+                labels.append(expenses[user_id])
+
+        return labels
 
 
 if __name__ == "__main__":
